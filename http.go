@@ -2,12 +2,19 @@ package main
 
 import (
 	"bytes"
-	"fmt"
+	_ "embed"
 	"github.com/buildkite/terminal-to-html"
 	"net"
 	"net/http"
 	"strconv"
+	"text/template"
 )
+
+//go:embed head.html
+var headHtml string
+
+//go:embed terminal.css
+var terminalCss string
 
 func NewTcpListener(port, maxPort int) (net.Listener, string) {
 	for {
@@ -45,18 +52,17 @@ func NewHandler(title string, broadcast *Broadcast) http.HandlerFunc {
 
 		flusher := writer.(http.Flusher)
 
-		_, err := writer.Write([]byte(fmt.Sprintf(`
-<html>
-<head>
-	<title>%s</title>
-	<!-- https://raw.githubusercontent.com/buildkite/terminal/v3.2.0/assets/terminal.css -->
-	<link rel="stylesheet" type="text/css" href="http://gitcdn.link/repo/buildkite/terminal/v3.2.0/assets/terminal.css">
-	<style>
-		* { padding: 0; margin: 0; border: 0; outline: 0; }
-	</style>
-</head>
-<body class="term-container">
-`, title)))
+		buf := bytes.NewBuffer(nil)
+		t := template.Must(template.New(title).Parse(headHtml))
+		err := t.Execute(buf, map[string]string{
+			"title": title,
+			"css":   terminalCss,
+		})
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = writer.Write(buf.Bytes())
 		if err != nil {
 			return // client disconnected?
 		}
