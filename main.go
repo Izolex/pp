@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -25,8 +26,8 @@ func main() {
 	runners := NewRunners(config, args, serverNames)
 	listener, addr := NewTcpListener(80, 100)
 
-	go http.Serve(listener, NewMux(runners))
-	go run(config.Command, config.Codes, runners)
+	go runHttp(listener, NewServeMux(runners))
+	go runSsh(config.Command, config.Codes, runners)
 
 	screen := NewScreen(os.Stdout)
 	renderer := NewRenderer(screen)
@@ -52,7 +53,14 @@ func parseCliArgs(args []string) ([][]string, []string) {
 	return list[:len(groups)-1], list[len(groups)-1:][0]
 }
 
-func run(command string, codes *Codes, runners []*Runner) {
+func runHttp(listener net.Listener, mux *http.ServeMux) {
+	err := http.Serve(listener, mux)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func runSsh(command string, codes *Codes, runners []*Runner) {
 	for _, r := range runners {
 		cmd := exec.Command("ssh", r.Addr, command)
 		go r.Exec(cmd, codes)

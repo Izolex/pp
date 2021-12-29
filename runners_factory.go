@@ -2,13 +2,14 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 )
 
 func NewRunners(config *Config, cliArgs [][]string, serverNames []string) []*Runner {
 	list := make([]*Runner, 0)
 	used := map[string]struct{}{}
-	argsCom := combine(newArgsMap(config, cliArgs))
+	argsCom := combine(newArgsMap(config.Args, cliArgs))
 
 	for _, info := range newServerInfosList(config, serverNames) {
 		paramsCom := combine(info.Params)
@@ -39,15 +40,19 @@ func newServerInfosList(config *Config, serverNames []string) []*ServerInfo {
 			continue
 		}
 
+		if _, ok := config.Servers[serverName]; !ok {
+			panic(fmt.Errorf("server \"%s\" does not exists", serverName))
+		}
+
 		servers = append(servers, config.Servers[serverName])
 	}
 	return servers
 }
 
-func newArgsMap(config *Config, args [][]string) map[string][]string {
+func newArgsMap(configArgs []string, args [][]string) map[string][]string {
 	argsMap := make(map[string][]string)
 	for i, argsList := range args {
-		name := config.Args[i]
+		name := configArgs[i]
 		argsMap[name] = argsList
 	}
 	return argsMap
@@ -83,7 +88,7 @@ func combine(data map[string][]string) []map[string]string {
 	result := make([]map[string]string, 0)
 
 	first := true
-	for name := range data {
+	for name, dataVal := range data {
 		// init fill res
 		if first { // for over map is unstable
 			for _, val := range data[name] {
@@ -99,14 +104,10 @@ func combine(data map[string][]string) []map[string]string {
 		filler := make([]map[string]string, 0)
 
 		// combine each item of res with current item of arr
-		for index := range result {
-			for _, val := range data[name] {
-				tmp := make(map[string]string, 0)
-				for n, v := range result[index] {
-					tmp[n] = v
-				}
-				tmp[name] = val
-				filler = append(filler, tmp)
+		for _, resultVal := range result {
+			for _, val := range dataVal {
+				resultVal[name] = val
+				filler = append(filler, resultVal)
 			}
 		}
 

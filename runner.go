@@ -40,9 +40,9 @@ func (r *Runner) GetState() RunnerState {
 }
 
 func (r *Runner) Exec(cmd *exec.Cmd, codes *Codes) {
+	go r.Broadcast.Run()
 	defer r.Broadcast.Stop()
 
-	go r.Broadcast.Start()
 	go r.catchPipe(getPipe(cmd.StderrPipe()))
 	go r.catchPipe(getPipe(cmd.StdoutPipe()))
 
@@ -53,6 +53,7 @@ func (r *Runner) Exec(cmd *exec.Cmd, codes *Codes) {
 	if err != nil {
 		r.Broadcast.Publish([]byte(err.Error()))
 		r.setState(RunnerStateError)
+		return
 	}
 
 	err = cmd.Wait()
@@ -84,10 +85,10 @@ func (r *Runner) catchPipe(reader io.ReadCloser) {
 	var err error
 
 	for {
-		data := make([]byte, 1024)
+		data := make([]byte, 516)
 		_, err = reader.Read(data)
 		if err != nil {
-			if err == io.EOF || err == io.ErrClosedPipe || errors.Is(err, fs.ErrClosed) {
+			if errors.Is(err, io.EOF) || errors.Is(err, io.ErrClosedPipe) || errors.Is(err, fs.ErrClosed) {
 				return
 			}
 

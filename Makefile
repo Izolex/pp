@@ -26,5 +26,5 @@ define build
 		-v $(shell pwd):/app \
 		-w /app \
 		golang:alpine \
-		go build
+		go build -o /app/pp
 endef
