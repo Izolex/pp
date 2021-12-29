@@ -15,7 +15,7 @@ type Broadcast struct {
 }
 
 func NewBroadcast() *Broadcast {
-	br := &Broadcast{
+	return &Broadcast{
 		history: make([]byte, 0),
 		running: false,
 		stop:    make(chan struct{}),
@@ -23,8 +23,6 @@ func NewBroadcast() *Broadcast {
 		sub:     make(chan chan []byte),
 		unsub:   make(chan chan []byte),
 	}
-	go br.run()
-	return br
 }
 
 func (b *Broadcast) Subscribe() chan []byte {
@@ -54,13 +52,6 @@ func (b *Broadcast) Publish(msg []byte) {
 	b.msg <- msg
 }
 
-func (b *Broadcast) Start() {
-	b.Lock()
-	defer b.Unlock()
-
-	b.running = true
-}
-
 func (b *Broadcast) Stop() {
 	b.Lock()
 	defer b.Unlock()
@@ -69,7 +60,11 @@ func (b *Broadcast) Stop() {
 	b.stop <- struct{}{}
 }
 
-func (b *Broadcast) run() {
+func (b *Broadcast) Run() {
+	b.Lock()
+	b.running = true
+	b.Unlock()
+
 	subs := map[chan []byte]struct{}{}
 
 	for {

@@ -5,6 +5,17 @@ import (
 	"time"
 )
 
+const (
+	colorReset  = "\033[0m"
+	colorGreen  = "\033[0;32m"
+	colorRed    = "\033[0;31m"
+	colorYellow = "\033[0;33m"
+
+	stateOk   = colorGreen + "\u2713" + colorReset
+	stateErr  = colorRed + "\u2717" + colorReset
+	stateWarn = colorYellow + "\u26A0" + colorReset
+)
+
 type Renderer struct {
 	screen *Screen
 }
@@ -103,14 +114,3 @@ func (r *Renderer) report(runners []*Runner) {
 		colorReset,
 	)
 }
-
-const (
-	colorReset  = "\033[0m"
-	colorGreen  = "\033[0;32m"
-	colorRed    = "\033[0;31m"
-	colorYellow = "\033[0;33m"
-
-	stateOk   = colorGreen + "\u2713" + colorReset
-	stateErr  = colorRed + "\u2717" + colorReset
-	stateWarn = colorYellow + "\u26A0" + colorReset
-)

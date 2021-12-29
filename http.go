@@ -38,7 +38,7 @@ func NewTcpListener(port, maxPort int) (net.Listener, string) {
 	}
 }
 
-func NewMux(runners []*Runner) *http.ServeMux {
+func NewServeMux(runners []*Runner) *http.ServeMux {
 	mux := http.NewServeMux()
 	for _, r := range runners {
 		mux.Handle("/"+r.Addr, NewHandler(r.Addr, r.Broadcast))
@@ -53,11 +53,12 @@ func NewHandler(title string, broadcast *Broadcast) http.HandlerFunc {
 		flusher := writer.(http.Flusher)
 
 		buf := bytes.NewBuffer(nil)
-		t := template.Must(template.New(title).Parse(headHtml))
-		err := t.Execute(buf, map[string]string{
-			"title": title,
-			"css":   terminalCss,
-		})
+		err := template.
+			Must(template.New(title).Parse(headHtml)).
+			Execute(buf, map[string]string{
+				"title": title,
+				"css":   terminalCss,
+			})
 		if err != nil {
 			panic(err)
 		}
@@ -69,6 +70,7 @@ func NewHandler(title string, broadcast *Broadcast) http.HandlerFunc {
 		flusher.Flush()
 
 		ch := broadcast.Subscribe()
+		defer broadcast.Unsubscribe(ch)
 
 		for {
 			msg, ok := <-ch
@@ -79,7 +81,7 @@ func NewHandler(title string, broadcast *Broadcast) http.HandlerFunc {
 
 			_, err := writer.Write(renderAnsi(msg))
 			if err != nil {
-				broadcast.Unsubscribe(ch)
+				return
 			}
 
 			flusher.Flush()
