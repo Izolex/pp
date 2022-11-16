@@ -14,7 +14,7 @@ build.linux:
 	$(call build, linux)
 
 mv:
-	mv $(shell pwd)/pp /usr/local/bin
+	mv "$(shell pwd)/pp" /usr/local/bin
 
 
 define build
@@ -23,7 +23,7 @@ define build
 		-e GOOS=$(strip $(1)) \
 		-e GOARCH=amd64 \
 		-e CGO_ENABLED=0 \
-		-v $(shell pwd):/app \
+		-v "$(shell pwd):/app" \
 		-w /app \
 		golang:alpine \
 		go build -o /app/pp
