@@ -1,26 +1,26 @@
-command: sudo puppet agent -tv
-codes:
-  ok: [ 0,2 ]
-  warning: [ 1,3,4,5,6 ]
+command: sudo puppet agent -tv # SSH command which you want to run
+codes: # CLI indicator of result of command
+  ok: [ 0,2 ] # OK - green NIKE
+  warning: [ 1,3,4,5,6 ] # yellow warning triangle
 
-portRange:
+portRange: # port range in which pp searches for free TCP port for running HTTP server
   min: 80
   max: 100
 
-args:
+args: # groups of arguments which you want to enter from CLI, for example $ pp arg1_1,arg1_2 arg2_1,arg2_2 serverNames...
   - domain
 
-params:
+params: # parameters for creating all combinations with args and server names, see below
   num: [ 1,2 ]
 
-aliases:
+aliases: # you can create alias for group of server names
   fe: [ web, api ]
 
 servers:
   web: web{{.num}}.{{.domain}}.pp
   api: api{{.num}}.{{.domain}}.pp
-  cron: cron.{{.domain}}.pp
-  worker:
+  cron: cron.{{.domain}}.pp # notice no {{.num}} in template
+  worker: # notice you can override default params
     mask: worker{{.num}}.{{.domain}}.pp
     params:
       num: [ 1 ]
