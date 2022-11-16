@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"errors"
@@ -25,7 +25,6 @@ func NewRenderer(screen *Screen) *Renderer {
 }
 
 func (r *Renderer) Render(addr string, runners []*Runner) {
-	r.screen.Row("Started at %s\n", time.Now().Format(time.Kitchen))
 	r.list(addr, runners)
 	r.report(runners)
 }
@@ -37,6 +36,7 @@ func (r *Renderer) list(addr string, runners []*Runner) {
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
 
+	r.screen.Row("Started at %s\n", time.Now().Format(time.Kitchen))
 	for {
 		<-ticker.C
 

@@ -5,7 +5,7 @@ no_target:
 
 
 build.go:
-	go build -o "$(shell pwd)/pp"
+	go build -o "$(shell pwd)"
 
 build.silicon:
 	$(call build, arm64, darwin)

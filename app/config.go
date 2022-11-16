@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"bytes"
@@ -17,8 +17,8 @@ type Codes struct {
 }
 
 type PortRange struct {
-	min int
-	max int
+	Min int
+	Max int
 }
 
 type Config struct {
@@ -46,8 +46,8 @@ func NewConfig(configYaml string) *Config {
 			warning: codes.GetIntSlice("warning"),
 		},
 		PortRange: &PortRange{
-			min: portRange.GetInt("min"),
-			max: portRange.GetInt("max"),
+			Min: portRange.GetInt("min"),
+			Max: portRange.GetInt("max"),
 		},
 		Args:    viper.GetStringSlice("args"),
 		Servers: parseServers(),
