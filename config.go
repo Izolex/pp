@@ -16,12 +16,18 @@ type Codes struct {
 	warning []int
 }
 
+type PortRange struct {
+	min int
+	max int
+}
+
 type Config struct {
-	Command string
-	Codes   *Codes
-	Args    []string
-	Servers map[string]*ServerInfo
-	Aliases map[string][]string
+	Command   string
+	Codes     *Codes
+	PortRange *PortRange
+	Args      []string
+	Servers   map[string]*ServerInfo
+	Aliases   map[string][]string
 }
 
 func NewConfig(configYaml string) *Config {
@@ -32,11 +38,16 @@ func NewConfig(configYaml string) *Config {
 	}
 
 	codes := viper.Sub("codes")
+	portRange := viper.Sub("portRange")
 	config := &Config{
 		Command: viper.GetString("command"),
 		Codes: &Codes{
 			ok:      codes.GetIntSlice("ok"),
 			warning: codes.GetIntSlice("warning"),
+		},
+		PortRange: &PortRange{
+			min: portRange.GetInt("min"),
+			max: portRange.GetInt("max"),
 		},
 		Args:    viper.GetStringSlice("args"),
 		Servers: parseServers(),

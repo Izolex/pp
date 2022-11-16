@@ -24,7 +24,7 @@ func main() {
 	}
 
 	runners := NewRunners(config, args, serverNames)
-	listener, addr := NewTcpListener(80, 100)
+	listener, addr := NewTcpListener(config.PortRange.min, config.PortRange.max)
 
 	go runHttp(listener, NewServeMux(runners))
 	go runSsh(config.Command, config.Codes, runners)
